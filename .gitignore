@@ -203,6 +203,12 @@ results/power_log.txt
 # committed under web/models/ instead.
 results/onnx/
 
+# Sandbox for scripts/preprocessing_ablation.py: throwaway checkpoints and a
+# throwaway runs.jsonl, kept out of results/ so an ablation cannot be mistaken
+# for a published run. The ablation's actual output is results/preprocessing_
+# ablation.json, which IS committed.
+results/ablation/
+
 # Local editor/agent tooling: preview launch configs and session state. Useful
 # while working on the project, meaningless to anyone cloning it.
 .claude/
