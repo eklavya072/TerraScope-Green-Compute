@@ -14,7 +14,7 @@ licence, and indicate if changes were made.
 
 Attribution for the results data:
     TerraScope: an accuracy-energy benchmark for CPU-only land-cover
-    classification. https://github.com/eklavya072/TerraScope-GeoSpatial-AI
+    classification. https://github.com/eklavya072/TerraScope-Green-Compute
 
 The SOURCE IMAGERY these results are measured against is NOT covered by this
 licence. EuroSAT is distributed under the MIT licence by its authors:

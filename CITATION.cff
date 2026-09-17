@@ -6,7 +6,7 @@ authors:
   - family-names: Singh
     given-names: Eklavya
 license: MIT
-repository-code: "https://github.com/eklavya072/TerraScope-GeoSpatial-AI"
+repository-code: "https://github.com/eklavya072/TerraScope-Green-Compute"
 abstract: >-
   A reproducible benchmark of the accuracy-energy trade-off for EuroSAT land-cover
   classification on CPU-only hardware. Five architectures x five seeds under one

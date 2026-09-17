@@ -2,8 +2,8 @@
 
 **What does a percentage point of land-cover accuracy cost in energy?**
 
-[![CI](https://github.com/eklavya072/TerraScope-GeoSpatial-AI/actions/workflows/ci.yml/badge.svg)](https://github.com/eklavya072/TerraScope-GeoSpatial-AI/actions/workflows/ci.yml)
-[![Live demo](https://img.shields.io/badge/demo-run%20the%20models-1b4332)](https://eklavya072.github.io/TerraScope-GeoSpatial-AI/)
+[![CI](https://github.com/eklavya072/TerraScope-Green-Compute/actions/workflows/ci.yml/badge.svg)](https://github.com/eklavya072/TerraScope-Green-Compute/actions/workflows/ci.yml)
+[![Live demo](https://img.shields.io/badge/demo-run%20the%20models-1b4332)](https://eklavya072.github.io/TerraScope-Green-Compute/)
 [![License: MIT](https://img.shields.io/badge/code-MIT-blue)](LICENSE)
 [![Data: CC BY 4.0](https://img.shields.io/badge/results%20data-CC--BY--4.0-blue)](LICENSE-DATA)
 [![EuroSAT](https://img.shields.io/badge/dataset-EuroSAT%20(MIT)-green)](https://github.com/phelber/eurosat)
@@ -67,7 +67,7 @@ of its lifetime energy, and where the published numbers are thinnest.
 
 ## Try it
 
-**[Run the models in your browser →](https://eklavya072.github.io/TerraScope-GeoSpatial-AI/)**
+**[Run the models in your browser →](https://eklavya072.github.io/TerraScope-Green-Compute/)**
 No install. It executes the real ONNX graphs on a held-out test tile via WebAssembly
 and times them on your machine; accuracy and energy are looked up from the committed
 benchmark, never invented.
