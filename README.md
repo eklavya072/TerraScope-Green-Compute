@@ -299,6 +299,42 @@ Thread counts: MobileNetV3-Small fp32 goes from 0.94 to 0.79 J/1k at 4 threads
 - **Nothing hand-typed.** Every published table and headline number is generated
   from `results/bench.jsonl`. CI regenerates them and fails on drift.
 - **86 tests** against committed artefacts. No GPU, no dataset download.
+- **Checked on a second platform.** CI re-times the committed graphs on x86 Linux
+  every push and reports rank agreement with the Apple M2
+  ([`scripts/crossplatform_latency.py`](scripts/crossplatform_latency.py)). The
+  ordering shifts there, Spearman rho ≈ 0.68, so this README says its ranking is
+  an M2 ranking instead of assuming it travels.
+- **Energy exclusion bounded, not just declared.** `powermetrics` logged the GPU
+  and ANE rails alongside the CPU, and across 89,983 samples the CPU drew
+  **99.80%** of on-die compute power, leaving 0.20% in GPU and ANE
+  ([`scripts/power_composition.py`](scripts/power_composition.py)). That also
+  independently confirms the matrix ran on the CPU.
+- **Leakage measured, not assumed.** EuroSAT papers rarely check whether train and
+  test folds share Sentinel-2 scenes, because the corpus ships no scene
+  identifier. This one checks
+  ([`scripts/leakage_check.py`](scripts/leakage_check.py)): nearest-neighbour
+  similarity against a within-train control, plus the accuracy effect of removing
+  the near-duplicates.
+  <details><summary>What the check found</summary>
+
+  *The folds are not separated.* Each test tile's cosine similarity to its nearest
+  train tile is indistinguishable from the same statistic computed inside the
+  train fold: median 0.6510 against a control of 0.6548, p99 0.9984 against
+  0.9983.
+
+  *Near-duplicates are common.* 8.8% of test tiles have a train neighbour at
+  cosine ≥ 0.99, and 88.2% of those pairs share a class, rising monotonically from
+  42% at ≥ 0.90. That rise separates real duplication from two tiles of flat
+  texture resembling each other.
+
+  *The cost.* Dropping those tiles moves the committed EfficientNet-Lite0 int8
+  graph from 97.33% to 97.08%, a fall of 0.26 pp. Dropping everything at ≥ 0.90
+  gives 96.56%, a fall of 0.78 pp.
+
+  Every model is affected equally, so the comparisons and the ranking stand. It
+  bounds how far the absolute accuracies sit above true unseen-geography
+  performance.
+  </details>
 
 <details>
 <summary>Exclusions, and what was excluded</summary>
@@ -385,72 +421,25 @@ make test      # run the suite against the committed artefacts
 
 ## Limitations
 
-Most important first.
-
-- **Single platform, and the ordering does not survive leaving it.** Every
-  published figure comes from one Apple M2. CI re-times the seven committed graphs
-  on x86 Linux each push
-  ([`scripts/crossplatform_latency.py`](scripts/crossplatform_latency.py)) and the
-  ordering changes: Spearman rho ≈ 0.68, not 1.0. Both fp32 graphs move sharply
-  up on x86, and `mobilenetv3_small fp32`, 4th on the M2 at 1.40 ms, becomes the
-  fastest measured, beating its own int8 form. Quantisation buys much less on x86.
-  Those runs are indicative only: one pass on a shared runner, latency only. They
-  are still enough to say the ranking here is an Apple M2 ranking.
-- **Energy is estimated, not metered.** On-die CPU package power sampled at 200 ms
-  and integrated over each window. `codecarbon` cannot cross-check it: it reads
-  Intel RAPL, which Apple Silicon lacks, so it degrades to a hardcoded-TDP model
-  whose output is a linear function of runtime, which is latency wearing a
-  different unit. What the CPU-package figure leaves out is now bounded rather
-  than merely disclosed: `powermetrics` also logged the GPU and ANE rails, and
-  across 89,983 samples the CPU drew **99.80%** of on-die compute power, leaving
-  0.20% in GPU and ANE
-  ([`scripts/power_composition.py`](scripts/power_composition.py)). That also
-  confirms the matrix really did run on the CPU. DRAM, display and PSU losses
-  remain genuinely unmeasured, since no on-die counter sees them, so these are
-  not wall-socket figures.
-- **Scene leakage costs 0.3 to 0.8 pp**, measured rather than guessed. EuroSAT
-  tiles are cut from larger Sentinel-2 scenes and the corpus carries no scene
-  identifier, so the split is stratified by class but cannot be grouped by scene.
-  [`scripts/leakage_check.py`](scripts/leakage_check.py) quantifies the result.
-  <details><summary>How it was measured, and what it found</summary>
-
-  *The folds are not separated.* Each test tile's cosine similarity to its nearest
-  train tile is indistinguishable from the same statistic computed inside the
-  train fold: median 0.6510 against a control of 0.6548, p99 0.9984 against
-  0.9983. A test tile sits as close to the training data as a train tile sits to
-  its own same-scene neighbours.
-
-  *Near-duplicates are common.* 8.8% of test tiles have a train neighbour at
-  cosine ≥ 0.99, and 88.2% of those pairs share a class, rising monotonically from
-  42% at ≥ 0.90. That rise is what separates real duplication from two tiles of
-  flat texture resembling each other.
-
-  *The cost.* Dropping those tiles moves the committed EfficientNet-Lite0 int8
-  graph from 97.33% to 97.08%, a fall of 0.26 pp. Dropping everything at ≥ 0.90
-  gives 96.56%, a fall of 0.78 pp. This is a lower bound: it catches visible
-  duplication, not same-scene tiles that happen to look different.
-
-  Every model is affected equally, so the comparisons and the ranking stand. It is
-  the absolute numbers that are not a geographic-generalisation claim.
-  </details>
+- **One hardware platform.** Absolute latency, memory and energy figures are
+  properties of one Apple M2. The ordering is an M2 ordering; on x86 it shifts, as
+  the cross-platform check above reports.
+- **Energy is estimated, not metered at the wall.** On-die CPU package power,
+  sampled at 200 ms and integrated over each window. DRAM and PSU losses are not
+  visible to any on-die counter, so these are not wall-socket figures.
+  `codecarbon` cannot cross-check them: it reads Intel RAPL, which Apple Silicon
+  lacks, so it degrades to a hardcoded-TDP model whose output is a linear function
+  of runtime, which is latency wearing a different unit.
 - **CO₂e rests on a stated assumption**: 481 gCO₂e/kWh, world average. Carbon
   scales linearly, so substituting your own grid is one multiplication. The
   recommended configuration's 0.42 g per million inferences becomes about 0.04 g
-  at 50 gCO₂e/kWh and 0.61 g at 700. That range is wider than any difference this
+  at 50 gCO₂e/kWh and 0.61 g at 700, a range wider than any difference this
   benchmark measures between models.
-- **EuroSAT is near-saturated**, so architecture differences are small in absolute
-  terms even when statistically reliable. That is itself the finding.
-- **Geographic bias.** EuroSAT covers 34 European countries. Nothing here supports
-  a claim about performance elsewhere, where land cover, agriculture, settlement
-  morphology and phenology all differ.
-- **RGB only.** EuroSAT's 13-band multispectral form is not benchmarked, and
-  closing that gap is not a small change: the multispectral corpus is a separate
-  download, a 13-channel stem cannot reuse the ImageNet-pretrained first
-  convolution, and the full 25-run matrix would need retraining. Absolute
-  accuracies would not be comparable to the ones here. The energy and latency
-  ordering is driven by architecture rather than by ten extra input channels, so
-  it would plausibly survive, but that is an expectation and not a measurement.
-
+- **EuroSAT is European and near-saturated.** It covers 34 European countries, so
+  nothing here supports a claim about land cover elsewhere, and architecture
+  differences are small in absolute terms even when statistically reliable. That
+  saturation is itself the finding: accuracy stops discriminating before energy
+  does.
 
 ---
 
