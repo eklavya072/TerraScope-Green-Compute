@@ -298,7 +298,7 @@ Thread counts: MobileNetV3-Small fp32 goes from 0.94 to 0.79 J/1k at 4 threads
   confidence intervals, Welch's t-test with Holm-Bonferroni correction.
 - **Nothing hand-typed.** Every published table and headline number is generated
   from `results/bench.jsonl`. CI regenerates them and fails on drift.
-- **86 tests** against committed artefacts. No GPU, no dataset download.
+- **87 tests** against committed artefacts. No GPU, no dataset download.
 - **Checked on a second platform.** CI re-times the committed graphs on x86 Linux
   every push and reports rank agreement with the Apple M2
   ([`scripts/crossplatform_latency.py`](scripts/crossplatform_latency.py)). The
@@ -309,6 +309,16 @@ Thread counts: MobileNetV3-Small fp32 goes from 0.94 to 0.79 J/1k at 4 threads
   **99.80%** of on-die compute power, leaving 0.20% in GPU and ANE
   ([`scripts/power_composition.py`](scripts/power_composition.py)). That also
   independently confirms the matrix ran on the CPU.
+- **The fairness rule was checked for a cost.** All five models share one
+  preprocessing convention, ImageNet channel statistics, which is what makes the
+  comparison meaningful. Four report exactly those in their pretrained config;
+  MobileViT-S asks for raw [0,1]. Retraining it across all five seeds under its
+  native convention changes accuracy by **-0.03 ± 0.34 pp**, an interval
+  containing zero
+  ([`scripts/preprocessing_ablation.py`](scripts/preprocessing_ablation.py)). The
+  convention cost the one model it did not suit nothing measurable, because the
+  recipe fine-tunes the full network and several epochs absorb an affine shift on
+  the input.
 - **Leakage measured, not assumed.** EuroSAT papers rarely check whether train and
   test folds share Sentinel-2 scenes, because the corpus ships no scene
   identifier. This one checks

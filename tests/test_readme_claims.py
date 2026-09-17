@@ -307,3 +307,25 @@ def test_power_composition_claim_matches_the_measurement(readme, power_compositi
     # a rail was dropped from the parse and both numbers are wrong together.
     total = pc["cpu_share_of_on_die_power"] + pc["excluded_gpu_ane_share"]
     assert abs(total - 1.0) < 1e-9, f"shares must sum to 1, got {total}"
+
+
+def test_preprocessing_ablation_claim_matches_the_measurement(readme):
+    """The fairness-cost bullet quotes a delta; hold it to the artefact."""
+    import json
+    import os
+    path = os.path.join("results", "preprocessing_ablation.json")
+    if not os.path.exists(path):
+        pytest.skip("results/preprocessing_ablation.json not present")
+    with open(path) as fh:
+        d = json.load(fh)
+
+    ci = d["delta_ci"]
+    assert f"{ci['mean']:+.2f} ± {ci['half_width']:.2f} pp" in readme
+
+    # The claim is "no measurable cost", which is only true while the interval
+    # spans zero. If a re-run moved it off zero the prose would be wrong rather
+    # than merely stale, so the guard checks the conclusion and not just digits.
+    assert ci["ci_low"] <= 0 <= ci["ci_high"], (
+        f"delta interval no longer contains zero: "
+        f"[{ci['ci_low']:.2f}, {ci['ci_high']:.2f}] pp")
+    assert d["per_seed"] and len(d["per_seed"]) == ci["n"]
