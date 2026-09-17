@@ -279,3 +279,31 @@ def test_leakage_control_is_a_real_control(leakage):
              sorted(leakage["by_threshold"], key=lambda r: r["threshold"])]
     assert all(a <= b for a, b in zip(fracs, fracs[1:])), (
         f"same-class fraction must rise with similarity, got {fracs}")
+
+
+@pytest.fixture(scope="module")
+def power_composition():
+    import json
+    import os
+    path = os.path.join("results", "power_composition.json")
+    if not os.path.exists(path):
+        pytest.skip("results/power_composition.json not present")
+    with open(path) as fh:
+        return json.load(fh)
+
+
+def test_power_composition_claim_matches_the_measurement(readme, power_composition):
+    """The energy limitation now quotes a share; hold it to the artefact.
+
+    "CPU package power only" went from a disclosure to a bounded one, which means
+    the bound is a number, which means it can rot like any other.
+    """
+    pc = power_composition
+    assert f"{pc['cpu_share_of_on_die_power'] * 100:.2f}%" in readme
+    assert f"{pc['excluded_gpu_ane_share'] * 100:.2f}%" in readme
+    assert f"{pc['samples']:,}" in readme
+
+    # The two shares partition on-die power; if they ever stop summing to one,
+    # a rail was dropped from the parse and both numbers are wrong together.
+    total = pc["cpu_share_of_on_die_power"] + pc["excluded_gpu_ane_share"]
+    assert abs(total - 1.0) < 1e-9, f"shares must sum to 1, got {total}"

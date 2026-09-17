@@ -298,7 +298,7 @@ Thread counts: MobileNetV3-Small fp32 goes from 0.94 to 0.79 J/1k at 4 threads
   confidence intervals, Welch's t-test with Holm-Bonferroni correction.
 - **Nothing hand-typed.** Every published table and headline number is generated
   from `results/bench.jsonl`. CI regenerates them and fails on drift.
-- **85 tests** against committed artefacts. No GPU, no dataset download.
+- **86 tests** against committed artefacts. No GPU, no dataset download.
 
 <details>
 <summary>Exclusions, and what was excluded</summary>
@@ -397,10 +397,17 @@ Most important first.
   Those runs are indicative only: one pass on a shared runner, latency only. They
   are still enough to say the ranking here is an Apple M2 ranking.
 - **Energy is estimated, not metered.** On-die CPU package power sampled at 200 ms
-  and integrated over each window, excluding DRAM, display and PSU losses.
-  `codecarbon` cannot cross-check it: it reads Intel RAPL, which Apple Silicon
-  lacks, so it degrades to a hardcoded-TDP model whose output is a linear function
-  of runtime, which is latency wearing a different unit.
+  and integrated over each window. `codecarbon` cannot cross-check it: it reads
+  Intel RAPL, which Apple Silicon lacks, so it degrades to a hardcoded-TDP model
+  whose output is a linear function of runtime, which is latency wearing a
+  different unit. What the CPU-package figure leaves out is now bounded rather
+  than merely disclosed: `powermetrics` also logged the GPU and ANE rails, and
+  across 89,983 samples the CPU drew **99.80%** of on-die compute power, leaving
+  0.20% in GPU and ANE
+  ([`scripts/power_composition.py`](scripts/power_composition.py)). That also
+  confirms the matrix really did run on the CPU. DRAM, display and PSU losses
+  remain genuinely unmeasured, since no on-die counter sees them, so these are
+  not wall-socket figures.
 - **Scene leakage costs 0.3 to 0.8 pp**, measured rather than guessed. EuroSAT
   tiles are cut from larger Sentinel-2 scenes and the corpus carries no scene
   identifier, so the split is stratified by class but cannot be grouped by scene.
@@ -431,28 +438,18 @@ Most important first.
   recommended configuration's 0.42 g per million inferences becomes about 0.04 g
   at 50 gCO₂e/kWh and 0.61 g at 700. That range is wider than any difference this
   benchmark measures between models.
-<details>
-<summary>Seven further limitations</summary>
-
 - **EuroSAT is near-saturated**, so architecture differences are small in absolute
   terms even when statistically reliable. That is itself the finding.
 - **Geographic bias.** EuroSAT covers 34 European countries. Nothing here supports
   a claim about performance elsewhere, where land cover, agriculture, settlement
   morphology and phenology all differ.
-- **RGB only.** EuroSAT's 13-band multispectral form is not benchmarked.
-- **One preprocessing convention.** Fairness requires identical preprocessing, so
-  all five models use ImageNet channel statistics. Four report exactly those.
-  MobileViT's config expects raw [0,1] inputs, so its numbers carry a caveat the
-  others do not.
-- **Early stopping interacts with fast convergence.** MobileViT-S reaches ~98%
-  validation accuracy within one epoch, and on two of five seeds the patience-4
-  rule fired at epochs 6 and 7. The rule is identical for every model, so the
-  comparison is fair, but it explains MobileViT-S's wider confidence interval.
-- **Training-time figures mix power regimes.** ResNet-50 seed 0 trained under Low
-  Power Mode on battery. Accuracy is unaffected because it comes from checkpoints,
-  but `train_seconds` is not comparable across rows and no benchmark figure
-  depends on it.
-</details>
+- **RGB only.** EuroSAT's 13-band multispectral form is not benchmarked, and
+  closing that gap is not a small change: the multispectral corpus is a separate
+  download, a 13-channel stem cannot reuse the ImageNet-pretrained first
+  convolution, and the full 25-run matrix would need retraining. Absolute
+  accuracies would not be comparable to the ones here. The energy and latency
+  ordering is driven by architecture rather than by ten extra input channels, so
+  it would plausibly survive, but that is an expectation and not a measurement.
 
 
 ---
