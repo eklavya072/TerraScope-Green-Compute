@@ -298,7 +298,7 @@ Thread counts: MobileNetV3-Small fp32 goes from 0.94 to 0.79 J/1k at 4 threads
   confidence intervals, Welch's t-test with Holm-Bonferroni correction.
 - **Nothing hand-typed.** Every published table and headline number is generated
   from `results/bench.jsonl`. CI regenerates them and fails on drift.
-- **87 tests** against committed artefacts. No GPU, no dataset download.
+- **92 tests** against committed artefacts. No GPU, no dataset download.
 - **Checked on a second platform.** CI re-times the committed graphs on x86 Linux
   every push and reports rank agreement with the Apple M2
   ([`scripts/crossplatform_latency.py`](scripts/crossplatform_latency.py)). The

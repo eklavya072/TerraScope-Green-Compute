@@ -7,6 +7,9 @@ authors:
     given-names: Eklavya
 license: MIT
 repository-code: "https://github.com/eklavya072/TerraScope-Green-Compute"
+url: "https://eklavya072.github.io/TerraScope-Green-Compute/"
+version: 1.0.0
+date-released: 2026-09-18
 abstract: >-
   A reproducible benchmark of the accuracy-energy trade-off for EuroSAT land-cover
   classification on CPU-only hardware. Five architectures x five seeds under one
@@ -20,7 +23,11 @@ keywords:
   - EuroSAT
   - benchmark
   - energy efficiency
+  - green AI
   - quantization
+  - ONNX Runtime
+  - edge inference
+  - reproducibility
 references:
   - type: article
     title: "EuroSAT: A Novel Dataset and Deep Learning Benchmark for Land Use and Land Cover Classification"
@@ -33,3 +40,10 @@ references:
         given-names: Andreas
       - family-names: Borth
         given-names: Damian
+    journal: "IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing"
+    volume: 12
+    issue: 7
+    start: 2217
+    end: 2226
+    year: 2019
+    doi: "10.1109/JSTARS.2019.2918242"
