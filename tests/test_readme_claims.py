@@ -329,3 +329,28 @@ def test_preprocessing_ablation_claim_matches_the_measurement(readme):
         f"delta interval no longer contains zero: "
         f"[{ci['ci_low']:.2f}, {ci['ci_high']:.2f}] pp")
     assert d["per_seed"] and len(d["per_seed"]) == ci["n"]
+
+
+def test_repository_map_lists_every_module(readme):
+    """The map went stale within two commits of being written as prose.
+
+    scripts/ gained power_composition.py and preprocessing_ablation.py and the
+    map mentioned neither, because nothing checked it. A map that silently omits
+    the newest work is worse than no map: a reader takes the omission as meaning
+    the file is not worth knowing about.
+    """
+    import glob
+    import os
+
+    tracked = sorted(
+        os.path.basename(f)
+        for d in ("bench", "scripts")
+        for f in glob.glob(os.path.join(d, "*"))
+        if os.path.isfile(f)
+        and f.endswith((".py", ".sh"))
+        and os.path.basename(f) != "__init__.py")
+    assert tracked, "no modules found to check"
+
+    missing = [f for f in tracked if f not in readme]
+    assert not missing, (
+        "the repository map does not mention: " + ", ".join(missing))

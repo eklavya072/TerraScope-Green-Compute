@@ -298,7 +298,7 @@ Thread counts: MobileNetV3-Small fp32 goes from 0.94 to 0.79 J/1k at 4 threads
   confidence intervals, Welch's t-test with Holm-Bonferroni correction.
 - **Nothing hand-typed.** Every published table and headline number is generated
   from `results/bench.jsonl`. CI regenerates them and fails on drift.
-- **92 tests** against committed artefacts. No GPU, no dataset download.
+- **93 tests** against committed artefacts. No GPU, no dataset download.
 - **Checked on a second platform.** CI re-times the committed graphs on x86 Linux
   every push and reports rank agreement with the Apple M2
   ([`scripts/crossplatform_latency.py`](scripts/crossplatform_latency.py)). The
@@ -474,13 +474,42 @@ Efficiency only becomes a design decision once someone reports it.
 
 ## Repository map
 
-`bench/` is the benchmark: `config.py` holds the zoo, the shared recipe and the
-grid-intensity constant as a single source of truth, and every other module reads
-from it. `scripts/` covers data prep, split generation, isolated memory
-measurement, the cross-platform latency check and the leakage check. `tests/`
-runs against committed artefacts, so it needs no GPU and no dataset. `splits/`,
-`results/` and `web/` hold the committed split, the measurements and the demo
-site.
+```
+bench/                      the benchmark
+  config.py                 zoo, shared recipe, normalisation, grid intensity
+                            (single source of truth; every module reads from it)
+  data.py                   split-driven loading; the only way to obtain a fold
+  models.py                 one construction path, so no architecture is special
+  train.py                  one (model, seed) under the shared recipe
+  export_onnx.py            ONNX fp32 + int8, calibrated on the train fold only
+  benchmark.py              CPU-only latency / accuracy / energy matrix
+  power.py                  powermetrics parsing and energy integration
+  exclusion.py              pre-registered window rejection criteria
+  stats.py                  Student-t CIs, Welch tests, Holm, Pareto frontier
+  report.py                 aggregation into summary.json, tables, figure
+  utils.py                  seeding, environment capture, split verification
+
+scripts/
+  prepare_data.py           fetch EuroSAT, write the sha256 manifest
+  make_split.py             the deterministic split; the reproducibility anchor
+  measure_memory.py         per-model RSS in isolated subprocesses
+  energy_sampler.sh         privileged powermetrics sampler
+  crossplatform_latency.py  re-time the committed graphs on another CPU
+  power_composition.py      CPU share of on-die power; bounds what energy omits
+  leakage_check.py          fold separation, against a within-train control
+  preprocessing_ablation.py what the shared preprocessing cost MobileViT-S
+  build_site_data.py        export web/data/site.json from the results
+  check_derived.py          verify results/ regenerates across platforms
+  check_site.py             verify the site quotes only measured figures
+  render_readme.py          inject the generated tables into this file
+  pick_demo_tiles.py        choose demo tiles spanning the outcome range
+  serve_web.py              local dev server with no caching and byte ranges
+
+tests/                      runs on committed artefacts; no GPU, no dataset
+splits/                     the committed split, its metadata and its sha256
+results/                    raw measurements, derived tables, summary, figure
+web/                        the demo site: static pages, runtime, ONNX graphs
+```
 
 Deeper documentation: [PROTOCOL.md](PROTOCOL.md) for the measurement protocol,
 outcomes and deviations, and [DATASHEET.md](DATASHEET.md) following *Datasheets
