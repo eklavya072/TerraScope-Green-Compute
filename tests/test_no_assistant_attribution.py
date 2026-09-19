@@ -33,9 +33,17 @@ PATTERNS = [
 ]
 
 
+SELF = os.path.relpath(__file__, os.getcwd())
+
+
 def _tracked_files():
     out = subprocess.run(["git", "ls-files"], capture_output=True, text=True).stdout
-    return [f for f in out.split("\n") if f and os.path.isfile(f)]
+    # This file is excluded from its own scan: it has to spell out the phrasings
+    # it forbids, so it matches itself by construction. It failed CI exactly this
+    # way, having passed locally only because it was not yet `git add`ed and so
+    # was invisible to `git ls-files`.
+    return [f for f in out.split("\n")
+            if f and os.path.isfile(f) and os.path.normpath(f) != os.path.normpath(SELF)]
 
 
 def test_no_tracked_file_credits_an_assistant():
