@@ -2,6 +2,7 @@
 
 **What does a percentage point of land-cover accuracy cost in energy?**
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22848156.svg)](https://doi.org/10.5281/zenodo.22848156)
 [![CI](https://github.com/eklavya072/TerraScope-Green-Compute/actions/workflows/ci.yml/badge.svg)](https://github.com/eklavya072/TerraScope-Green-Compute/actions/workflows/ci.yml)
 [![Live demo](https://img.shields.io/badge/demo-run%20the%20models-1b4332)](https://eklavya072.github.io/TerraScope-Green-Compute/)
 [![License: MIT](https://img.shields.io/badge/code-MIT-blue)](LICENSE)
@@ -521,6 +522,15 @@ for Datasets* (Gebru et al.).
 
 Code is MIT ([LICENSE](LICENSE)). Results data and the split file are CC-BY-4.0
 ([LICENSE-DATA](LICENSE-DATA)).
+
+To cite this benchmark:
+
+> Singh, E. (2026). *TerraScope: an accuracy-energy benchmark for land-cover
+> classification on CPU-only hardware* (v1.0.0). Zenodo.
+> https://doi.org/10.5281/zenodo.22848156
+
+The DOI above is the concept DOI: it always resolves to the newest version.
+Version 1.0.0 specifically is [10.5281/zenodo.22848157](https://doi.org/10.5281/zenodo.22848157).
 
 EuroSAT is distributed under the MIT licence:
 
