@@ -9,7 +9,7 @@ license: MIT
 repository-code: "https://github.com/eklavya072/TerraScope-Green-Compute"
 url: "https://eklavya072.github.io/TerraScope-Green-Compute/"
 version: 1.0.0
-date-released: 2026-09-18
+date-released: 2026-09-19
 abstract: >-
   A reproducible benchmark of the accuracy-energy trade-off for EuroSAT land-cover
   classification on CPU-only hardware. Five architectures x five seeds under one
